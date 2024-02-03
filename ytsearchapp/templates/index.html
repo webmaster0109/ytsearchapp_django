@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-3 col-lg-3"></div>
+        <div class="col-12 col-md-6 col-lg-6">
+            {% include 'logo.html' %}
+            <div class="form">
+                <form method="get">
+                    <div class="d-flex justify-content-center">
+                        <div class="flex-grow-1 search___container">
+                            <input type="search" list="datalistOptions" class="form-control" name="search_query" id="">
+                            <datalist id="datalistOptions" class="datalistOptions">
+                                {% for suggestion in suggestions %}
+                                <option value="{{suggestion}}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        <div><button type="submit" class="btn btn-danger"><i class="bi bi-search"></i></button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-12 col-md-3 col-lg-3"></div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="col-12 col-lg-12 col-md-12">
+        <div class="videos___content">
+            <div class="video__loading_time"><p>About {{length}} videos found (in {{time}} seconds)</p></div>
+            <div class="videos___details">
+                <div class="row">
+                    {% for video in videos %}
+                    {% if video %}
+                    <div class="col-12 col-md-6 col-lg-6 mb-4">
+                        <div class="row d-flex">
+                            <div class="col-12 col-lg-5 col-md-5">
+                                <div class="video___thumbnail">
+                                    <a href="watch?video={{video.id}}" rel="noopener noreferrer">
+                                        {% if video.thumbnails.1.url %}
+                                        <img src="{{video.thumbnails.1.url}}" alt="{{video.title}}" class="w-100 main___img">
+                                        {% else %}
+                                        <img src="{{video.thumbnails.0.url}}" alt="{{video.title}}" class="w-100 main___img">
+                                        {% endif %}
+                                        {% if video.richThumbnail.url %}
+                                        <img src="{{video.richThumbnail.url}}" alt="{{video.title}}" class="w-100 overlay___gif">
+                                        {% endif %}
+                                    </a>
+                                    <div class="overlay___text"><span>{{video.duration}}</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-7 col-md-7">
+                                <h2 class="my-2">{{video.title}}</h2>
+                                <div class="d-flex video___channel mb-3">
+                                    <div class="me-2">{{video.channel.name}}</div>
+                                    <div class="me-2">•</div>
+                                    <div class="me-2">{{video.viewCount.short}}</div>
+                                    <div class="me-2">•</div>
+                                    <div>{{video.publishedTime}}</div>
+                                </div>
+                                <div class="video___published__time">{% for desc in video.descriptionSnippet %}{{desc.text}}{% endfor %}</div>
+                            </div>
+                        </div>
+                        <div class="hr___line" style="display: none;"></div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% for video in next_videos %}
+                    {% if video %}
+                    <div class="col-12 col-md-6 col-lg-6 mb-4">
+                        <div class="row d-flex">
+                            <div class="col-12 col-lg-5 col-md-5">
+                                <div class="video___thumbnail">
+                                    <a href="watch?video={{video.id}}" rel="noopener noreferrer">
+                                        {% if video.thumbnails.1.url %}
+                                        <img src="{{video.thumbnails.1.url}}" alt="{{video.title}}" class="w-100 main___img">
+                                        {% else %}
+                                        <img src="{{video.thumbnails.0.url}}" alt="{{video.title}}" class="w-100 main___img">
+                                        {% endif %}
+                                        {% if video.richThumbnail.url %}
+                                        <img src="{{video.richThumbnail.url}}" alt="{{video.title}}" class="w-100 overlay___gif">
+                                        {% endif %}
+                                    </a>
+                                    <div class="overlay___text"><span>{{video.duration}}</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-7 col-md-7">
+                                <h2 class="my-2">{{video.title}}</h2>
+                                <div class="d-flex video___channel mb-3">
+                                    <div class="me-2">{{video.channel.name}}</div>
+                                    <div class="me-2">•</div>
+                                    <div class="me-2">{{video.viewCount.short}}</div>
+                                    <div class="me-2">•</div>
+                                    <div>{{video.publishedTime}}</div>
+                                </div>
+                                <div class="video___published__time">{% for desc in video.descriptionSnippet %}{{desc.text}}{% endfor %}</div>
+                            </div>
+                        </div>
+                        <div class="hr___line" style="display: none;"></div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

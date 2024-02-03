@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-3 col-lg-3"></div>
+        <div class="col-12 col-md-6 col-lg-6">
+            {% include 'logo.html' %}
+        </div>
+        <div class="col-12 col-md-3 col-lg-3"></div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row single___video__detail">
+        <div class="col-12 col-md-8 col-lg-8">
+            <div id="player">
+                <iframe src="https://www.youtube.com/embed/{{video.id}}" frameborder="0" allowfullscreen=""></iframe>
+            </div>
+            <div class="d-flex mt-2">
+                <div class="flex-grow-1">
+                    <h2 class="mb-1">{{video.title}}</h2>
+                    <p class="video___channel__title">{{video.channel.name}}</p>
+                </div>
+                <div>
+                    <a href="#" class="btn btn-danger col-12">Channel</a>
+                </div>
+            </div>
+
+            <div class="video___desc mb-3">
+                <span style="font-size: 18px;font-weight: 600;">{{views}} • {{publishedDate}}</span>
+                <p>{{description}}</p>
+            </div>
+        </div>
+        <div class="col-12 col-md-4 col-lg-4">
+            <div class="comments___section">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-lg-12 comment___title mb-2">
+                        <h5>{{length}} Comments</h5>
+                    </div>
+                    {% for comment in comments %}
+                    <div class="col-12 col-md-12 col-lg-12 mb-3">
+                        <div class="d-flex">
+                            <div class="me-3"><img src="{{comment.author.thumbnails.2.url}}" class="" alt="{{comment.id}}" /></div>
+                            <div>
+                                <span style="color: lightgray;">{{comment.author.name}} <span class="" style="color: #fff;">{{comment.published}}</span></span><br />
+                                <span>{{comment.content}}</span><br />
+                                <span><i class="bi bi-hand-thumbs-up"></i> {% if comment.votes.label %}{{comment.votes.label}}{% endif %} <i class="bi bi-hand-thumbs-down ms-3"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
