@@ -39,7 +39,7 @@ def home(request):
 
 def watch_video(request):
 
-    video_id = request.GET.get('video')
+    video_id = request.GET.get('video_id')
 
     get_video = get_video_detail(video_id)
 
