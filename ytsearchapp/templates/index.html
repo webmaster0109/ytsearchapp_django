@@ -33,6 +33,7 @@
 </div>
 <div class="container-fluid">
     <div class="col-12 col-lg-12 col-md-12">
+        {% if option_selected == 'videos' %}
         <div class="videos___content">
             <div class="video__loading_time"><p>About {{length}} videos found (in {{time}} seconds)</p></div>
             <div class="videos___details">
@@ -111,6 +112,45 @@
                 </div>
             </div>
         </div>
+        {% elif option_selected == 'playlist' %}
+        <div class="videos___content">
+            <div class="video__loading_time"><p>About {{playlist_length}} playlists found (in {{time_playlist}} seconds)</p></div>
+            <div class="videos___details">
+                <div class="row">
+                    {% for video in playlists %}
+                    {% if video %}
+                    <div class="col-12 col-md-6 col-lg-6 mb-4">
+                        <div class="row d-flex">
+                            <div class="col-12 col-lg-5 col-md-5">
+                                <div class="video___thumbnail">
+                                    <a href="playlist?list={{video.id}}" rel="noopener noreferrer">
+                                        {% if video.thumbnails.1.url %}
+                                        <img src="{{video.thumbnails.3.url}}" alt="{{video.title}}" class="w-100 main___img">
+                                        {% else %}
+                                        <img src="{{video.thumbnails.0.url}}" alt="{{video.title}}" class="w-100 main___img">
+                                        {% endif %}
+                                    </a>
+                                    <div class="overlay___text"><span>Total {{video.videoCount}} videos</span></div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-7 col-md-7">
+                                <h2 class="my-2">{{video.title}}</h2>
+                                <div class="d-flex video___channel mb-3">
+                                    <div class="me-2">{{video.channel.name}}</div>
+                                    <div class="me-2">•</div>
+                                    <div class="me-2">{{video.type}}</div>
+                                </div>
+                                <div class="video___published__time"></div>
+                            </div>
+                        </div>
+                        <div class="hr___line" style="display: none;"></div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
