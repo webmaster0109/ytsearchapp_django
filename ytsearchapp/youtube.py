@@ -25,9 +25,20 @@ class YoutubePlaylistSearch:
         playlists = self.playlistsSearch.result()
         return playlists["result"]
 
-def get_playlist_videos(query):
-    playlistVideos = Playlist.getVideos(query)
-    return playlistVideos
+class PlaylistVideos:
+    def __init__(self, query):
+        self.playlist = Playlist(f'https://www.youtube.com/playlist?list={query}')
+
+    def get_playlist_videos(self):
+        playlistVideos = self.playlist
+        return playlistVideos.videos
+    
+    def get_more_playlist_videos(self):
+        if self.playlist.hasMoreVideos:
+            while self.playlist.hasMoreVideos:
+                self.playlist.getNextVideos()
+                return self.get_playlist_videos()
+
 
 def get_video_detail(query):
     videoInfo = Video.getInfo(query)

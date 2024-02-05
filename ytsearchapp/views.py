@@ -95,9 +95,12 @@ def playlist_videos(request):
 
     playlist_id = request.GET.get('list')
     start_time = time.time()
-    playlist_link = f'https://www.youtube.com/playlist?list={playlist_id}'
-    playlist_video = get_playlist_videos(playlist_link)['videos']
+    playlist = PlaylistVideos(playlist_id)
+    # playlist_video = playlist.get_playlist_videos()
+    playlist_video = playlist.get_more_playlist_videos()
     end_time = time.time()
+
+    videos_length = 0
 
     if playlist_video:
         elapsed_time_seconds = end_time - start_time
