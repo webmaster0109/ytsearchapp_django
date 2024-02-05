@@ -17,10 +17,13 @@ class YoutubeVideoSearch:
         self.search.next()
         return self.search_youtube_videos()
 
-def search_youtube_playlist(playlist):
-    playlistsSearch = PlaylistsSearch(playlist)
-    playlists = playlistsSearch.result()
-    return playlists["result"]
+class YoutubePlaylistSearch:
+    def __init__(self, playlist):
+        self.playlistsSearch = PlaylistsSearch(playlist)
+    
+    def search_youtube_playlist(self):
+        playlists = self.playlistsSearch.result()
+        return playlists["result"]
 
 def get_playlist_videos(query):
     playlistVideos = Playlist.getVideos(query)

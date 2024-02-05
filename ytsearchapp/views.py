@@ -7,7 +7,11 @@ from django.template.defaultfilters import urlize
 # Create your views here.
 
 def home(request):
-    search_query = request.GET.get("search_query")
+    option_selected = None
+    if request.method == "GET":
+        search_query = request.GET.get("search_query")
+        option_selected = request.GET.get("find")
+
     start_time = time.time()
     video_class = YoutubeVideoSearch(search_query, max_limit=200)
     videos = video_class.search_youtube_videos()
@@ -16,8 +20,10 @@ def home(request):
         next_videos = video_class.search_more_videos()
         next_videos.extend(next_videos)
     end_time = time.time()
-    
     suggestions = search_video_suggestions(search_query)
+
+    # playlist
+    
 
     if videos:
         elapsed_time_second = end_time - start_time
@@ -34,7 +40,8 @@ def home(request):
             'length': video_length, 
             'videos': videos_content,
             'next_videos':next_videos,
-            'suggestions': suggestions
+            'suggestions': suggestions,
+            'option_selected': option_selected
         })
 
 def watch_video(request):
