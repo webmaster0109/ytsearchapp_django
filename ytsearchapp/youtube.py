@@ -34,10 +34,9 @@ class PlaylistVideos:
         return playlistVideos.videos
     
     def get_more_playlist_videos(self):
-        if self.playlist.hasMoreVideos:
-            while self.playlist.hasMoreVideos:
-                self.playlist.getNextVideos()
-                return self.get_playlist_videos()
+        while self.playlist.hasMoreVideos:
+            self.playlist.getNextVideos()
+        return self.get_playlist_videos()
 
 
 def get_video_detail(query):

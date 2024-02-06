@@ -92,19 +92,21 @@ def watch_video(request):
         })
 
 def playlist_videos(request):
-
     playlist_id = request.GET.get('list')
     start_time = time.time()
     playlist = PlaylistVideos(playlist_id)
-    # playlist_video = playlist.get_playlist_videos()
-    playlist_video = playlist.get_more_playlist_videos()
+    
+    if playlist.get_more_playlist_videos() is None:
+        playlist_video = playlist.get_playlist_videos()
+    else:
+        playlist_video = playlist.get_more_playlist_videos()
+
+    videos_length = len(playlist_video)
     end_time = time.time()
     elapsed_time_seconds = end_time - start_time
     time_in_seconds = f'{elapsed_time_seconds:.2f}'
-    videos_length = len(playlist_video)
 
-    if playlist_video:
-        playlist_videos = playlist_video
+    playlist_videos = playlist_video if playlist_video else []
 
     return render(request, "playlist.html", context={
         'time': time_in_seconds,
