@@ -99,16 +99,15 @@ def playlist_videos(request):
     # playlist_video = playlist.get_playlist_videos()
     playlist_video = playlist.get_more_playlist_videos()
     end_time = time.time()
-
-    videos_length = 0
+    elapsed_time_seconds = end_time - start_time
+    time_in_seconds = f'{elapsed_time_seconds:.2f}'
 
     if playlist_video:
-        elapsed_time_seconds = end_time - start_time
         videos_length = len(playlist_video)
         playlist_videos = playlist_video
 
     return render(request, "playlist.html", context={
-        'time': f'{elapsed_time_seconds:.2f}',
+        'time': time_in_seconds,
         'length': videos_length,
         'playlists': playlist_videos
     })
