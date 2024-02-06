@@ -15,7 +15,6 @@
             font-weight: 500;
             font-size: 16px;
             color: #fff;
-            background-color: #000;
             display: block;
             background-color: rgb(14, 17, 23);
             text-size-adjust: 100%;
@@ -40,7 +39,7 @@
             rgb(255, 189, 69), rgb(255, 255, 125), 
             rgb(61, 213, 109), rgb(96, 180, 255), rgb(178, 126, 255), rgb(109, 63, 192));
         }
-        .form input[type="search"] {
+        .form input[type="text"] {
             -webkit-appearance: none; /* Remove default appearance */
             appearance: none;
             background-color: lightgrey;
@@ -51,7 +50,7 @@
             font-weight: 600;
             text-transform: capitalize;
         }
-        .form input[type="search"]::-webkit-search-clear-button {
+        .form input[type="text"]::-webkit-search-clear-button {
             display: none; /* Hide the clear button for WebKit browsers */
         }
         .form select {
@@ -72,6 +71,31 @@
             font-weight: 800;
             border-radius: 0 15px 15px 0;
         }
+
+        #suggestions-container {
+            display: none;
+            border: 1px solid #ccc;
+            text-align: start;
+            width: 100%;
+            max-width: 100%;
+            position: absolute;
+            background-color: lightgrey;
+            color: #000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 9999;
+            height: 380px;
+            overflow-y: scroll;
+        }
+
+        .suggestion {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .suggestion:hover {
+            background-color: #f0f0f0;
+        }
+
         .video__loading_time {
             margin: 25px 0;
         }

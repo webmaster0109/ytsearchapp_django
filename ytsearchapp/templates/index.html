@@ -10,12 +10,8 @@
                 <form method="get">
                     <div class="d-flex justify-content-center">
                         <div class="flex-grow-1 search___container">
-                            <input type="search" list="datalistOptions" class="form-control" name="search_query" id="">
-                            <datalist id="datalistOptions" class="datalistOptions">
-                                {% for suggestion in suggestions %}
-                                <option value="{{suggestion}}">
-                                {% endfor %}
-                            </datalist>
+                            <input type="text" oninput="showSuggestions(this.value)" class="form-control" name="search_query" placeholder="Type to search" id="search-input">
+                            <div id="suggestions-container" class="mt-3"></div>
                         </div>
                         <div>
                             <select class="form-select" name="find">
@@ -153,5 +149,45 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    function showSuggestions(query) {
+      const suggestionsContainer = document.getElementById('suggestions-container');
+      suggestionsContainer.innerHTML = '';
+  
+      // Replace this with your actual data fetching logic or static data
+      const suggestions = getSuggestionsFromAPI(query);
+  
+      if (suggestions.length > 0) {
+        suggestions.forEach(suggestion => {
+          const suggestionElement = document.createElement('div');
+          suggestionElement.classList.add('suggestion');
+          suggestionElement.textContent = suggestion;
+          suggestionElement.addEventListener('click', () => {
+            // Handle suggestion click (e.g., populate search input with suggestion)
+            document.getElementById('search-input').value = suggestion;
+            suggestionsContainer.style.display = 'none';
+          });
+          suggestionsContainer.appendChild(suggestionElement);
+        });
+  
+        suggestionsContainer.style.display = 'block';
+      } else {
+        suggestionsContainer.style.display = 'none';
+      }
+    }
+  
+    // Replace this function with actual API call or data source
+    function getSuggestionsFromAPI(query) {
+      // For demonstration, using static suggestions
+      const staticSuggestions = [
+            {% for suggestion in suggestions %}
+                "{{suggestion}}" {% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        console.log(staticSuggestions);
+      return staticSuggestions.filter(suggestion => suggestion.toLowerCase().includes(query.toLowerCase()));
+    }
+  </script>
 
 {% endblock content %}
