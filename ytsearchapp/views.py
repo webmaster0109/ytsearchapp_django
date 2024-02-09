@@ -4,8 +4,72 @@ from .youtube import *
 from dateutil import parser
 from django.utils.safestring import mark_safe
 from django.template.defaultfilters import urlize
+from .models import Profile, SavedVideos, send_registration_email
+from django.contrib.auth.models import User
+from django.urls import reverse
+from django.contrib import messages
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
+def login_attempt(request):
+    if request.user.is_authenticated:
+        return redirect(reverse('home'))
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user_obj = authenticate(request, username=username, password=password)
+        if user_obj:
+            login(request, user_obj)
+            if 'next' in request.POST:
+                return redirect(request.POST['next'])
+            return redirect('home')
+        else:
+            messages.warning(request, 'Invalid username or password. Please try again.')
+            return redirect('login')
+    return render(request, template_name="login.html")
+
+def register_attempt(request):
+    if request.user.is_authenticated:
+        return redirect(reverse('home'))
+    if request.method == "POST":
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if password != confirm_password:
+            messages.warning(request, "Passwords do not match. Please enter matching passwords.")
+            return redirect('register')
+
+        try:
+            username = str(email).split('@')[0]
+            user_obj, created = User.objects.get_or_create(email=email, defaults={'first_name': first_name, 'last_name': last_name, 'username': username})
+            user_obj.set_password(password)
+            if not created:
+                messages.warning(request, 'Email or username is already taken.')
+                return redirect('register')
+            user_obj.save()
+            send_registration_email(user_obj)
+            profile_obj = Profile.objects.create(user=user_obj)
+            profile_obj.save()
+            
+        except Exception as e:
+            print(e)
+        
+        login(request, user_obj)
+        if 'next' in request.POST:
+            return redirect(request.POST['next'])
+        return redirect('home')
+    
+    return render(request, template_name="register.html")
+
+def signout(request):
+    logout(request)
+    return redirect("home")
+
+@login_required(login_url='/auth/login')
 def home(request):
     option_selected = None
     if request.method == "GET":
@@ -55,6 +119,7 @@ def home(request):
             'playlists': playlist_content
         })
 
+@login_required(login_url='/auth/login')
 def watch_video(request):
 
     video_id = request.GET.get('video_id')
@@ -91,6 +156,7 @@ def watch_video(request):
             'length': comment_length
         })
 
+@login_required(login_url='/auth/login')
 def playlist_videos(request):
     playlist_id = request.GET.get('list')
     start_time = time.time()
