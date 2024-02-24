@@ -12,6 +12,8 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 import uuid
 from django.contrib.auth.hashers import check_password
+from django.utils import timezone
+from datetime import timedelta
 # Create your views here.
 
 def login_attempt(request):
@@ -120,6 +122,13 @@ def forgot_password(request):
 def change_password(request, token):
     try:
         profile_obj = Profile.objects.filter(forgot_password_token=token).first()
+        if profile_obj and profile_obj.created_at + timedelta(hours=1) < timezone.now():
+            # Token has expired, remove it from the database
+            profile_obj.forgot_password_token = None
+            profile_obj.save()
+            messages.warning(request, "The password reset link has expired. Please request a new one.")
+            return redirect('/auth/forgot-password')
+
         context = {'profile': profile_obj.user.id}
         if request.method == "POST":
             new_password = request.POST.get("password")
@@ -139,7 +148,7 @@ def change_password(request, token):
             if check_password(new_password, user_obj.password):
                 messages.warning(request, "You've chosen the old password. Please create a new and different one.")
                 return redirect(f'/change-password/{token}')
-            
+
             user_obj.set_password(new_password)
             user_obj.save()
             profile_obj.forgot_password_token = None
