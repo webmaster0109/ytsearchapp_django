@@ -122,14 +122,18 @@ def forgot_password(request):
 def change_password(request, token):
     try:
         profile_obj = Profile.objects.filter(forgot_password_token=token).first()
-        if profile_obj and profile_obj.created_at + timedelta(hours=1) < timezone.now():
+
+        if not profile_obj:
+            messages.warning(request, "Invalid or expired password reset link. Please request a new one.")
+            return redirect('forgot_password')
+        
+        if profile_obj and profile_obj.modified_at + timedelta(minutes=10) < timezone.now():
             # Token has expired, remove it from the database
             profile_obj.forgot_password_token = None
             profile_obj.save()
             messages.warning(request, "The password reset link has expired. Please request a new one.")
-            return redirect('/forgot-password')
+            return redirect('forgot_password')
 
-        context = {'profile': profile_obj.user.id}
         if request.method == "POST":
             new_password = request.POST.get("password")
             confirm_new_password = request.POST.get("confirm-password")
@@ -146,18 +150,22 @@ def change_password(request, token):
             user_obj = User.objects.get(id=user_id)
 
             if check_password(new_password, user_obj.password):
-                messages.warning(request, "You've chosen the old password. Please create a new and different one.")
+                messages.warning(request, "You chose the old password. Please create a new and different one.")
                 return redirect(f'/change-password/{token}')
 
             user_obj.set_password(new_password)
             user_obj.save()
             profile_obj.forgot_password_token = None
+            profile_obj.modified_at = timezone.now()
             profile_obj.save()
-            messages.success(request, "Succesfully, Password has changed. Login now!")
+            messages.success(request, "Succesfully password has changed. Login now!")
             return redirect('/auth/login')
     except Exception as e:
         print(e)
-    return render(request, template_name="change_password.html", context=context)
+    return render(
+        request,
+        template_name="change_password.html",
+        context={'profile': profile_obj.user.id})
 
 @login_required(login_url='/auth/login')
 def home(request):
@@ -244,8 +252,6 @@ def watch_video(request):
             'publishedDate': formatted_datetime,
             'length': comment_length
         })
-
-# recovery_code = 8ZESLG6AQJ7GCTNBZ6T6VTZZ
 
 @login_required(login_url='/auth/login')
 def playlist_videos(request):

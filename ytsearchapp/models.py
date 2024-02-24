@@ -15,6 +15,7 @@ class Profile(models.Model):
     is_verified = models.BooleanField(default=False, null=True, blank=True)
     forgot_password_token = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.user.username
