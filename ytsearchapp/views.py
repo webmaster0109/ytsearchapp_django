@@ -69,6 +69,10 @@ def signout(request):
     logout(request)
     return redirect("home")
 
+def forgot_password(request):
+
+    return render(request, template_name="forgot_password.html")
+
 @login_required(login_url='/auth/login')
 def home(request):
     option_selected = None
