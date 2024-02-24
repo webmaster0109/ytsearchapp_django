@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 import uuid
+from django.contrib.auth.hashers import check_password
 # Create your views here.
 
 def login_attempt(request):
@@ -134,6 +135,11 @@ def change_password(request, token):
                 return redirect(f'/change-password/{token}')
             
             user_obj = User.objects.get(id=user_id)
+
+            if check_password(new_password, user_obj.password):
+                messages.warning(request, "You've chosen the old password. Please create a new and different one.")
+                return redirect(f'/change-password/{token}')
+            
             user_obj.set_password(new_password)
             user_obj.save()
             profile_obj.forgot_password_token = None
