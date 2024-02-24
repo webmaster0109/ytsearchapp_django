@@ -127,7 +127,7 @@ def change_password(request, token):
             profile_obj.forgot_password_token = None
             profile_obj.save()
             messages.warning(request, "The password reset link has expired. Please request a new one.")
-            return redirect('/auth/forgot-password')
+            return redirect('/forgot-password')
 
         context = {'profile': profile_obj.user.id}
         if request.method == "POST":
