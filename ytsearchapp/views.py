@@ -245,6 +245,8 @@ def watch_video(request):
             'length': comment_length
         })
 
+# recovery_code = 8ZESLG6AQJ7GCTNBZ6T6VTZZ
+
 @login_required(login_url='/auth/login')
 def playlist_videos(request):
     playlist_id = request.GET.get('list')
