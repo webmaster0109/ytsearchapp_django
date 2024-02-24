@@ -4,12 +4,13 @@ from .youtube import *
 from dateutil import parser
 from django.utils.safestring import mark_safe
 from django.template.defaultfilters import urlize
-from .models import Profile, SavedVideos, send_registration_email
+from .models import Profile, SavedVideos, send_registration_email, send_forgot_password_mail, send_verification_mail
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
+import uuid
 # Create your views here.
 
 def login_attempt(request):
@@ -20,6 +21,11 @@ def login_attempt(request):
         password = request.POST.get('password')
         user_obj = authenticate(request, username=username, password=password)
         if user_obj:
+            profile_obj = Profile.objects.get(user=user_obj)
+            if not profile_obj.is_verified:
+                messages.warning(request, 'Your account is not verified. Please check your email for the verification link.')
+                return redirect('login')
+
             login(request, user_obj)
             if 'next' in request.POST:
                 return redirect(request.POST['next'])
@@ -51,23 +57,92 @@ def register_attempt(request):
                 messages.warning(request, 'Email or username is already taken.')
                 return redirect('register')
             user_obj.save()
-            send_registration_email(user_obj)
-            profile_obj = Profile.objects.create(user=user_obj)
+            profile_obj = Profile.objects.create(user=user_obj, verification_token=str(uuid.uuid4()))
             profile_obj.save()
+            send_verification_mail(request, email, profile_obj.verification_token)
             
         except Exception as e:
             print(e)
         
+        # login(request, user_obj)
+        # if 'next' in request.POST:
+        #     return redirect(request.POST['next'])
+        return redirect('login')
+    
+    return render(request, template_name="register.html")
+
+def verify_account(request, token):
+    try:
+        profile_obj = Profile.objects.get(verification_token=token)
+        if profile_obj.is_verified:
+            messages.warning(request, "Your account is already verified.")
+            return redirect('home')
+        profile_obj.is_verified = True
+        profile_obj.save()
+        user_obj = profile_obj.user
+        send_registration_email(user_obj)
+
         login(request, user_obj)
         if 'next' in request.POST:
             return redirect(request.POST['next'])
         return redirect('home')
     
-    return render(request, template_name="register.html")
+    except Exception as e:
+        print(e)
+    # return render()
 
 def signout(request):
     logout(request)
     return redirect("home")
+
+def forgot_password(request):
+    try:
+        if request.method == "POST":
+            username = request.POST.get('username')
+            if not User.objects.filter(username=username).first():
+                messages.warning(request, f"Sorry, There is no username of {username} exists. Register now!")
+                return redirect('register')
+            else:
+                user_obj = User.objects.get(username=username)
+                token = str(uuid.uuid4())
+                profile_obj = Profile.objects.get(user=user_obj)
+                profile_obj.forgot_password_token = token
+                profile_obj.save()
+                send_forgot_password_mail(request, user_obj, token)
+                messages.success(request, f"We've sent you forgot password link on your {user_obj.email}")
+                return redirect('forgot_password')
+
+    except Exception as e:
+        print(e)
+    return render(request, template_name="forgot_password.html")
+
+def change_password(request, token):
+    try:
+        profile_obj = Profile.objects.filter(forgot_password_token=token).first()
+        context = {'profile': profile_obj.user.id}
+        if request.method == "POST":
+            new_password = request.POST.get("password")
+            confirm_new_password = request.POST.get("confirm-password")
+            user_id = request.POST.get("user_id")
+
+            if user_id is None:
+                messages.warning(request, "Oops! No User ID found.")
+                return redirect(f'/change-password/{token}')
+            
+            if new_password != confirm_new_password:
+                messages.warning(request, "Both passwords must be same!")
+                return redirect(f'/change-password/{token}')
+            
+            user_obj = User.objects.get(id=user_id)
+            user_obj.set_password(new_password)
+            user_obj.save()
+            profile_obj.forgot_password_token = None
+            profile_obj.save()
+            messages.success(request, "Succesfully, Password has changed. Login now!")
+            return redirect('/auth/login')
+    except Exception as e:
+        print(e)
+    return render(request, template_name="change_password.html", context=context)
 
 @login_required(login_url='/auth/login')
 def home(request):
@@ -102,7 +177,6 @@ def home(request):
         elapsed_time_second_playlist = f'{elapsed_time_second_playlist:.2f}'
         playlist_length = len(playlist)
         playlist_content = playlist
-
 
     return render(
         request,

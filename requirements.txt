@@ -4,3 +4,7 @@ pytube
 python-dateutil
 gunicorn
 Pillow
+django-allauth
+djoser
+six
+django-environ
