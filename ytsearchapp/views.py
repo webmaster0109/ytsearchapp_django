@@ -102,11 +102,14 @@ def forgot_password(request):
     try:
         if request.method == "POST":
             username = request.POST.get('username')
-            if not User.objects.filter(username=username).first():
+            user_obj = User.objects.filter(username=username).first()
+            if not user_obj:
                 messages.warning(request, f"Sorry, There is no username of {username} exists. Register now!")
                 return redirect('register')
             else:
-                user_obj = User.objects.get(username=username)
+                if not user_obj.email:
+                    messages.warning(request, f"Sorry, There is no email of {username} exists. Need to add your email address.")
+                    return redirect('forgot_password')
                 token = str(uuid.uuid4())
                 profile_obj = Profile.objects.get(user=user_obj)
                 profile_obj.forgot_password_token = token
@@ -237,6 +240,9 @@ def watch_video(request):
         datetime_object = parser.parse(datetime_str)
         formatted_datetime = datetime_object.strftime("%d %B %Y")
     
+    comments = None
+    comment_length = 0
+
     if get_comments:
         comment_length = len(get_comments)
         comments = get_comments
