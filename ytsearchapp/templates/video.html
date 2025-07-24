@@ -36,9 +36,8 @@
             <div class="comments___section">
                 <div class="row">
                     <div class="col-12 col-md-12 col-lg-12 comment___title mb-2">
-                       {% comment %} <h5>{{length}} Comments</h5> {% endcomment %}
+                       <h5>{{length}} Comments</h5>
                     </div>
-                    {% comment %}
                     {% for comment in comments %}
                     <div class="col-12 col-md-12 col-lg-12 mb-3">
                         <div class="d-flex">
@@ -51,7 +50,6 @@
                         </div>
                     </div>
                     {% endfor %}
-                    {% endcomment %}
                 </div>
             </div>
         </div>

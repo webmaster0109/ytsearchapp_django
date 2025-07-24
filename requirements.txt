@@ -8,3 +8,4 @@ django-allauth
 djoser
 six
 django-environ
+httpx==0.23.3

@@ -252,7 +252,7 @@ def watch_video(request):
         "video.html",
         context={
             'video': get_video,
-            # 'comments': comments,
+            'comments': comments,
             'views': views,
             'description': safe_description,
             'publishedDate': formatted_datetime,
