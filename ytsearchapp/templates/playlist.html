@@ -1,53 +1,30 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12 col-md-3 col-lg-3"></div>
-        <div class="col-12 col-md-6 col-lg-6">
-            {% include 'logo.html' %}
-        </div>
-        <div class="col-12 col-md-3 col-lg-3"></div>
-    </div>
-</div>
+{% block title %}Playlist — VUE{% endblock %}
 
-<div class="container-fluid">
-    <div class="col-12 col-lg-12 col-md-12">
-        <div class="videos___content">
-            <div class="video__loading_time"><p>About {{length}} videos found (in {{time}} seconds)</p></div>
-            <div class="videos___details">
-                <div class="row">
-                    {% for video in playlists %}
-                    {% if video %}
-                    <div class="col-12 col-md-6 col-lg-6 mb-4">
-                        <div class="row d-flex">
-                            <div class="col-12 col-lg-5 col-md-5">
-                                <div class="video___thumbnail">
-                                    <a href="{% url 'watch_video' %}?video_id={{video.id|urlencode}}" rel="noopener noreferrer">
-                                        {% with thumbnail=video.thumbnails|last %}
-                                        {% if thumbnail.url %}<img src="{{thumbnail.url}}" alt="{{video.title}}" class="w-100 main___img">{% endif %}
-                                        {% endwith %}
-                                        {% if video.richThumbnail.url %}
-                                        <img src="{{video.richThumbnail.url}}" alt="{{video.title}}" class="w-100 overlay___gif">
-                                        {% endif %}
-                                    </a>
-                                    <div class="overlay___text"><span>{{video.duration}}</span></div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-lg-7 col-md-7">
-                                <h2 class="my-2">{{video.title}}</h2>
-                                <div class="d-flex video___channel mb-3">
-                                    <div class="me-2">{{video.channel.name}}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="hr___line" style="display: none;"></div>
-                    </div>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+{% block content %}
+<div class="content-page">
+  <a href="{% url 'home' %}" class="back-link"><i class="bi bi-arrow-left"></i> Back to discovery</a>
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">Playlist collection</span>
+      <h1>One good watch after another.</h1>
+      <p>{{ length }} videos curated in {{ time }} seconds.</p>
     </div>
+    <a href="{% url 'saved_videos' %}" class="button button--soft"><i class="bi bi-bookmark"></i> Saved videos</a>
+  </div>
+  {% include 'includes/alerts.html' %}
+
+  {% if playlists %}
+  <div class="playlist-grid">
+    {% for video in playlists %}{% if video %}{% include 'includes/video_card.html' with video=video %}{% endif %}{% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state__icon"><i class="bi bi-collection-play"></i></div>
+    <h3>This playlist is quiet</h3>
+    <p>We could not find any playable videos in this collection.</p>
+  </div>
+  {% endif %}
 </div>
 {% endblock content %}

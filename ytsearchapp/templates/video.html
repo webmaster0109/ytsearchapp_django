@@ -1,72 +1,121 @@
-{% extends "base.html" %}
-
+{% extends "base.html" %} {% block title %}{{ video.title }} — VUE{% endblock %}
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12 col-md-3 col-lg-3"></div>
-        <div class="col-12 col-md-6 col-lg-6">
-            {% include 'logo.html' %}
-        </div>
-        <div class="col-12 col-md-3 col-lg-3"></div>
-    </div>
-</div>
+<div class="content-page">
+  <a href="{% url 'home' %}" class="back-link"
+    ><i class="bi bi-arrow-left"></i> Back to discovery</a
+  >
 
-<div class="container-fluid">
-    <div class="row single___video__detail">
-        <div class="col-12 col-md-8 col-lg-8">
-            <div id="player">
-                <iframe src="https://www.youtube.com/embed/{{video.id}}?autoplay=1&mute=1" title="{{ video.title }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-            </div>
-            <div class="d-flex mt-2">
-                <div class="flex-grow-1">
-                    <h2 class="mb-1">{{video.title}}</h2>
-                    <p class="video___channel__title">{{video.channel.name}}</p>
-                </div>
-                <div>
-                    {% if video.channel.link %}<a href="{{ video.channel.link }}" target="_blank" rel="noopener noreferrer" class="btn btn-danger col-12">Channel</a>{% endif %}
-                    {% if user.is_authenticated %}
-                    <form action="{% url 'save_video' %}" method="post" class="mt-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="video_id" value="{{ video.id }}">
-                        <input type="hidden" name="next" value="{{ next_url }}">
-                        <button type="submit" class="btn btn-secondary col-12"{% if is_saved %} disabled{% endif %}>
-                            {% if is_saved %}Saved{% else %}Save video{% endif %}
-                        </button>
-                    </form>
-                    {% endif %}
-                </div>
-            </div>
+  {% include 'includes/alerts.html' %}
+  <div class="video-layout">
+    <section class="video-main">
+      <div class="player-frame">
+        <iframe
+          src="https://www.youtube.com/embed/{{ video.id }}?autoplay=1&mute=1&origin={{ request.scheme }}://{{ request.get_host }}"
+          title="{{ video.title }}"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="
+            accelerometer;
+            autoplay;
+            clipboard-write;
+            encrypted-media;
+            gyroscope;
+            picture-in-picture;
+            web-share;
+          "
+          allowfullscreen
+        >
+        </iframe>
+      </div>
+      <div class="video-main__content">
+        <div class="video-title-row">
+          <div>
+            <h1>{{ video.title }}</h1>
+            <p>{{ video.channel.name }}</p>
+          </div>
+          <div class="video-actions">
+            {% if video.channel.link %}<a
+              href="{{ video.channel.link }}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="button button--soft"
+              ><i class="bi bi-person-video3"></i> Channel</a
+            >{% endif %} {% if user.is_authenticated %}
+            <form action="{% url 'save_video' %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="video_id" value="{{ video.id }}" />
+              <input type="hidden" name="next" value="{{ next_url }}" />
+              <button
+                type="submit"
+                class="button {% if is_saved %}button--soft{% else %}button--primary{% endif %}"
+                {%
+                if
+                is_saved
+                %}
+                disabled{%
+                endif
+                %}
+              >
+                <i class="bi bi-bookmark{% if is_saved %}-fill{% endif %}"></i>
+                {% if is_saved %}Saved{% else %}Save{% endif %}
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        <div class="video-stats">
+          <span><i class="bi bi-eye"></i> {{ views }}</span>
+          {% if publishedDate %}<span
+            ><i class="bi bi-calendar3"></i> {{ publishedDate }}</span
+          >{% endif %} {% if video.duration.secondsText %}<span
+            ><i class="bi bi-clock"></i> {{ video.duration.secondsText }}
+            seconds</span
+          >{% endif %}
+        </div>
+        <div class="description-panel">{{ description }}</div>
+      </div>
+    </section>
 
-            <div class="video___desc mb-3">
-                <span style="font-size: 18px;font-weight: 600;">{{views}} • {{publishedDate}}</span>
-                <p>{{description}}</p>
+    <aside class="comments-panel">
+      <div class="comments-panel__header">
+        <h2>Comments</h2>
+        <span>{{ length }} responses</span>
+      </div>
+      <div class="comments-list">
+        {% for comment in comments %}
+        <article class="comment">
+          {% with author_thumbnail=comment.author.thumbnails|last %}
+            {% if author_thumbnail.url %}
+              <img
+                class="comment__avatar"
+                src="{{ author_thumbnail.url }}"
+                alt="{{ comment.author.name }}"
+              />
+            {% else %}
+              <span class="comment__avatar avatar">{{ comment.author.name|first|upper }}</span>
+            {% endif %}
+          {% endwith %}
+          <div class="comment__body">
+            <div class="comment__meta">
+              <span class="comment__author">{{ comment.author.name }}</span
+              ><span>·</span><span>{{ comment.published }}</span>
             </div>
+            <p>{{ comment.content }}</p>
+            <span class="comment__votes"><i class="bi bi-hand-thumbs-up"></i>
+              {% if comment.votes.label %}{{ comment.votes.label }}{% else %}Like{% endif %}
+            </span>
+          </div>
+        </article>
+        {% empty %}
+        <div class="empty-state">
+          <div class="empty-state__icon">
+            <i class="bi bi-chat-square-text"></i>
+          </div>
+          <h3>No comments yet</h3>
+          <p>There is nothing to read here just yet.</p>
         </div>
-        <div class="col-12 col-md-4 col-lg-4">
-            <div class="comments___section">
-                <div class="row">
-                    <div class="col-12 col-md-12 col-lg-12 comment___title mb-2">
-                       <h5>{{length}} Comments</h5>
-                    </div>
-                    {% for comment in comments %}
-                    <div class="col-12 col-md-12 col-lg-12 mb-3">
-                        <div class="d-flex">
-                            <div class="me-3">
-                                {% with author_thumbnail=comment.author.thumbnails|last %}
-                                {% if author_thumbnail.url %}<img src="{{author_thumbnail.url}}" alt="{{comment.author.name}}" />{% endif %}
-                                {% endwith %}
-                            </div>
-                            <div>
-                                <span style="color: lightgray;">{{comment.author.name}} <span class="" style="color: #fff;">{{comment.published}}</span></span><br />
-                                <span>{{comment.content}}</span><br />
-                                <span><i class="bi bi-hand-thumbs-up"></i> {% if comment.votes.label %}{{comment.votes.label}}{% endif %} <i class="bi bi-hand-thumbs-down ms-3"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
+        {% endfor %}
+      </div>
+    </aside>
+  </div>
 </div>
 {% endblock content %}

@@ -1,7 +1,9 @@
 {% if messages %}
-{% for message in messages %}
-<div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{message.tags|default:'info'}}{% endif %}" role="alert">
-    {{message}}
+<div class="alert-stack" aria-live="polite">
+  {% for message in messages %}
+  <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %}" role="alert">
+    <span>{{ message }}</span>
+  </div>
+  {% endfor %}
 </div>
-{% endfor %}
 {% endif %}

@@ -1,32 +1,47 @@
 {% extends "base.html" %}
 
+{% block title %}Saved videos — VUE{% endblock %}
+
 {% block content %}
-<div class="container">
-  {% include 'logo.html' %}
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Saved videos</h2>
-    <a href="{% url 'home' %}" class="btn btn-secondary">Search more</a>
+<div class="content-page">
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">Your library</span>
+      <h1>Keep the good ones close.</h1>
+      <p>Your personal collection of videos worth coming back to.</p>
+    </div>
+    <a href="{% url 'home' %}" class="button button--primary"><i class="bi bi-search"></i> Discover more</a>
   </div>
   {% include 'includes/alerts.html' %}
-  <div class="row">
+
+  {% if saved_videos %}
+  <div class="saved-grid">
     {% for video in saved_videos %}
-    <div class="col-12 col-md-6 mb-4">
-      <div class="card h-100">
-        {% if video.video_image %}<img src="{{ video.video_image }}" class="card-img-top" alt="{{ video.video_title }}">{% endif %}
-        <div class="card-body text-dark">
-          <h3 class="h5">{{ video.video_title }}</h3>
-          <p>{{ video.video_channel_name }}</p>
-          <a href="{% url 'watch_video' %}?video_id={{ video.video_id|urlencode }}" class="btn btn-primary">Watch</a>
-          <form action="{% url 'remove_saved_video' video.pk %}" method="post" class="d-inline">
+    <article class="saved-card">
+      {% if video.video_image %}
+      <a class="saved-card__image" href="{% url 'watch_video' %}?video_id={{ video.video_id|urlencode }}"><img src="{{ video.video_image }}" alt="{{ video.video_title }}" loading="lazy"></a>
+      {% endif %}
+      <div class="saved-card__body">
+        <h2><a href="{% url 'watch_video' %}?video_id={{ video.video_id|urlencode }}">{{ video.video_title }}</a></h2>
+        <p class="saved-card__channel">{{ video.video_channel_name|default:'Saved from YouTube' }}</p>
+        <div class="saved-card__actions">
+          <a href="{% url 'watch_video' %}?video_id={{ video.video_id|urlencode }}" class="button button--soft button--small"><i class="bi bi-play-fill"></i> Watch</a>
+          <form action="{% url 'remove_saved_video' video.pk %}" method="post">
             {% csrf_token %}
-            <button type="submit" class="btn btn-outline-danger">Remove</button>
+            <button type="submit" class="button button--danger button--small" aria-label="Remove {{ video.video_title }}"><i class="bi bi-trash3"></i></button>
           </form>
         </div>
       </div>
-    </div>
-    {% empty %}
-    <div class="col-12"><p>No saved videos yet.</p></div>
+    </article>
     {% endfor %}
   </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state__icon"><i class="bi bi-bookmark"></i></div>
+    <h3>Your library is waiting</h3>
+    <p>Save videos while you explore and they will be waiting here whenever you return.</p>
+    <a href="{% url 'home' %}" class="button button--primary empty-state__action">Start exploring</a>
+  </div>
+  {% endif %}
 </div>
 {% endblock content %}

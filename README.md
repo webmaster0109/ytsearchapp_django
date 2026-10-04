@@ -31,8 +31,10 @@ python manage.py test
 Set `DJANGO_DEBUG=False`, a new random `DJANGO_SECRET_KEY`, explicit
 `DJANGO_ALLOWED_HOSTS`, and a canonical HTTPS `SITE_URL`. Email links always use
 `SITE_URL`, never the incoming Host header. Configure the SMTP backend, credentials,
-and `DEFAULT_FROM_EMAIL` through environment variables. `DATABASE_URL` can override
-the SQLite development database; install the appropriate database driver if using PostgreSQL.
+and `DEFAULT_FROM_EMAIL` through environment variables. `CSRF_TRUSTED_ORIGINS`
+defaults to `SITE_URL`; set a comma-separated list of HTTPS origins if the app
+uses additional domains. `DATABASE_URL` can override the SQLite development database;
+install the appropriate database driver if using PostgreSQL.
 
 Set `CACHE_URL=redis://...` for shared, atomic rate limits and cached YouTube results
 across workers. The in-memory development cache is per-process. Behind a trusted TLS
@@ -70,6 +72,15 @@ treated as exposed; invalidate deployed sessions as part of rollout.
 The account-security migration invalidates legacy plaintext verification/reset tokens.
 Users can request new links. New tokens are random, hashed in the database, expire, and
 are consumed once. Password changes derive the user exclusively from the validated token.
+
+## Form POSTs and CSRF
+
+The app uses `Referrer-Policy: strict-origin-when-cross-origin` so browsers preserve
+the origin required for CSRF checks. `no-referrer` can cause native form POSTs to
+send `Origin: null`, which Django rejects even with a valid CSRF token. After
+changing the policy, restart the server and reload the form page before submitting.
+For local development, open `http://localhost:8000/auth/login` or
+`http://127.0.0.1:8000/auth/login` directly in the browser.
 
 ## YouTube integration
 

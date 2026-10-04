@@ -2,6 +2,7 @@ from unittest.mock import Mock, patch
 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
+from django.template.loader import get_template
 from django.test import Client, RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
@@ -92,6 +93,9 @@ class SafeYouTubeComponentTests(SimpleTestCase):
 
 
 class HomeViewTests(SimpleTestCase):
+    def test_video_template_compiles(self):
+        get_template('video.html')
+
     def test_home_without_query_does_not_call_youtube(self):
         request = RequestFactory().get('/')
 
@@ -126,6 +130,52 @@ class HomeViewTests(SimpleTestCase):
         self.assertEqual(context['videos'], [{'id': 'first'}])
         self.assertEqual(context['next_videos'], [{'id': 'second'}])
         self.assertEqual(context['length'], 2)
+
+
+class CsrfOriginTests(TestCase):
+    @override_settings(CSRF_TRUSTED_ORIGINS=['http://localhost:8000'])
+    def test_resend_verification_accepts_the_served_local_origin(self):
+        user = User.objects.create_user(username='csrf-user', email='csrf@example.com')
+        profile = Profile.objects.create(user=user, is_verified=False)
+        client = Client(enforce_csrf_checks=True)
+        page = client.get(reverse('login'), HTTP_HOST='localhost:8000')
+        self.assertEqual(
+            page.headers['Referrer-Policy'],
+            'strict-origin-when-cross-origin',
+        )
+        csrf_token = client.cookies['csrftoken'].value
+
+        with patch('ytsearchapp.views.send_verification_mail', return_value=True) as send_email:
+            response = client.post(
+                reverse('resend_verification'),
+                {'identifier': user.email, 'csrfmiddlewaretoken': csrf_token},
+                HTTP_HOST='localhost:8000',
+                HTTP_ORIGIN='http://localhost:8000',
+            )
+
+        self.assertRedirects(response, reverse('login'))
+        send_email.assert_called_once()
+        self.assertEqual(send_email.call_args.args[0], user.email)
+        profile.refresh_from_db()
+        self.assertIsNotNone(profile.verification_sent_at)
+        self.assertEqual(len(profile.verification_token), 64)
+
+    def test_resend_verification_rejects_null_and_untrusted_origins(self):
+        client = Client(enforce_csrf_checks=True)
+        client.get(reverse('login'), HTTP_HOST='localhost:8000')
+        csrf_token = client.cookies['csrftoken'].value
+
+        with patch('ytsearchapp.views.send_verification_mail') as send_email:
+            for origin in ('null', 'https://untrusted.example'):
+                with self.subTest(origin=origin):
+                    response = client.post(
+                        reverse('resend_verification'),
+                        {'identifier': 'unknown@example.com', 'csrfmiddlewaretoken': csrf_token},
+                        HTTP_HOST='localhost:8000',
+                        HTTP_ORIGIN=origin,
+                    )
+                    self.assertEqual(response.status_code, 403)
+            send_email.assert_not_called()
 
 
 @override_settings(

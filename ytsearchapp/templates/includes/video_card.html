@@ -1,0 +1,18 @@
+<article class="result-card">
+  <a class="thumbnail" href="{% url 'watch_video' %}?video_id={{ video.id|urlencode }}" aria-label="Watch {{ video.title }}">
+    {% with thumbnail=video.thumbnails|last %}
+      {% if thumbnail.url %}<img src="{{ thumbnail.url }}" alt="{{ video.title }}" loading="lazy">{% endif %}
+    {% endwith %}
+    <span class="thumbnail__play"><i class="bi bi-play-fill"></i></span>
+    {% if video.duration %}<span class="thumbnail__duration">{{ video.duration }}</span>{% endif %}
+  </a>
+  <div class="result-card__body">
+    <h3><a href="{% url 'watch_video' %}?video_id={{ video.id|urlencode }}">{{ video.title }}</a></h3>
+    <div class="card-meta">
+      {% if video.channel.name %}<span class="card-meta__channel">{{ video.channel.name }}</span>{% endif %}
+      {% if video.viewCount.short %}<span class="card-meta__dot">•</span><span>{{ video.viewCount.short }}</span>{% endif %}
+      {% if video.publishedTime %}<span class="card-meta__dot">•</span><span>{{ video.publishedTime }}</span>{% endif %}
+    </div>
+    {% if video.descriptionSnippet %}<p>{% for desc in video.descriptionSnippet %}{{ desc.text }}{% endfor %}</p>{% endif %}
+  </div>
+</article>

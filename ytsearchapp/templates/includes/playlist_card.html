@@ -1,0 +1,17 @@
+<article class="result-card">
+  <a class="thumbnail" href="{% url 'playlist' %}?list={{ video.id|urlencode }}" aria-label="Open {{ video.title }} playlist">
+    {% with thumbnail=video.thumbnails|last %}
+      {% if thumbnail.url %}<img src="{{ thumbnail.url }}" alt="{{ video.title }}" loading="lazy">{% endif %}
+    {% endwith %}
+    <span class="thumbnail__play"><i class="bi bi-collection-play"></i></span>
+    {% if video.videoCount %}<span class="thumbnail__count">{{ video.videoCount }} videos</span>{% endif %}
+  </a>
+  <div class="result-card__body">
+    <h3><a href="{% url 'playlist' %}?list={{ video.id|urlencode }}">{{ video.title }}</a></h3>
+    <div class="card-meta">
+      {% if video.channel.name %}<span class="card-meta__channel">{{ video.channel.name }}</span>{% endif %}
+      <span class="card-meta__dot">•</span><span>Playlist</span>
+    </div>
+    <p>Curated videos from {{ video.channel.name|default:'this channel' }}.</p>
+  </div>
+</article>

@@ -1,195 +1,110 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12 col-md-3 col-lg-3"></div>
-        <div class="col-12 col-md-6 col-lg-6">
-            {% include 'logo.html' %}
-            <div class="form">
-                <form method="get">
-                    <div class="d-flex justify-content-center">
-                        <div class="flex-grow-1 search___container">
-                    <input type="search" oninput="showSuggestions(this.value)" class="form-control" name="search_query" value="{{ search_query }}" placeholder="Type to search" id="search-input" autocomplete="off">
-                            <div id="suggestions-container" class="mt-3"></div>
-                        </div>
-                        <div>
-                            <select class="form-select" name="find">
-                                <option value="videos"{% if option_selected == 'videos' %} selected{% endif %}>Video</option>
-                                <option value="playlist"{% if option_selected == 'playlist' %} selected{% endif %}>Playlist</option>
-                            </select>
-                        </div>
-                        <div><button type="submit" class="btn btn-danger"><i class="bi bi-search"></i></button></div>
-                    </div>
-                </form>
-            </div>
-            <div class="mt-3">
-                {% include 'includes/alerts.html' %}
-            </div>
-        </div>
-        <div class="col-12 col-md-3 col-lg-3">
-            <div class="user___details col-lg-6 offset-lg-5" style="margin-top: 30px;">
-                {% if user.is_authenticated %}
-                <form action="{% url 'logout' %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Logout</button>
-                </form>
-                <a href="{% url 'saved_videos' %}" class="btn btn-secondary mt-2">Saved videos</a>
-                {% else %}
-                <a href="{% url 'login' %}" class="btn btn-secondary">Log in</a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-<div class="container-fluid">
-    <div class="col-12 col-lg-12 col-md-12">
-        {% if option_selected == 'videos' %}
-        <div class="videos___content">
-            <div class="video__loading_time"><p>About {{length}} videos found (in {{time}} seconds)</p></div>
-            <div class="videos___details">
-                <div class="row">
-                    {% for video in videos %}
-                    {% if video %}
-                    <div class="col-12 col-md-6 col-lg-6 mb-4">
-                        <div class="row d-flex">
-                            <div class="col-12 col-lg-5 col-md-5">
-                                <div class="video___thumbnail">
-                                    <a href="{% url 'watch_video' %}?video_id={{video.id|urlencode}}" rel="noopener noreferrer">
-                                        {% with thumbnail=video.thumbnails|last %}
-                                        {% if thumbnail.url %}<img src="{{thumbnail.url}}" alt="{{video.title}}" class="w-100 main___img">{% endif %}
-                                        {% endwith %}
-                                        {% if video.richThumbnail.url %}
-                                        <img src="{{video.richThumbnail.url}}" alt="{{video.title}}" class="w-100 overlay___gif">
-                                        {% endif %}
-                                    </a>
-                                    <div class="overlay___text"><span>{{video.duration}}</span></div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-lg-7 col-md-7">
-                                <h2 class="my-2">{{video.title}}</h2>
-                                <div class="d-flex video___channel mb-3">
-                                    <div class="me-2">{{video.channel.name}}</div>
-                                    <div class="me-2">•</div>
-                                    <div class="me-2">{{video.viewCount.short}}</div>
-                                    <div class="me-2">•</div>
-                                    <div>{{video.publishedTime}}</div>
-                                </div>
-                                <div class="video___published__time">{% for desc in video.descriptionSnippet %}{{desc.text}}{% endfor %}</div>
-                            </div>
-                        </div>
-                        <div class="hr___line" style="display: none;"></div>
-                    </div>
-                    {% endif %}
-                    {% endfor %}
+<div class="home-page">
+  <section class="hero-section">
+    <span class="eyebrow">A calmer way to discover</span>
+    <h1 class="hero-title">Find your next <span>favorite video.</span></h1>
+    <p class="hero-copy">Search across YouTube with a focused, beautiful workspace made for the things you actually want to watch.</p>
 
-                    {% for video in next_videos %}
-                    {% if video %}
-                    <div class="col-12 col-md-6 col-lg-6 mb-4">
-                        <div class="row d-flex">
-                            <div class="col-12 col-lg-5 col-md-5">
-                                <div class="video___thumbnail">
-                                    <a href="{% url 'watch_video' %}?video_id={{video.id|urlencode}}" rel="noopener noreferrer">
-                                        {% with thumbnail=video.thumbnails|last %}
-                                        {% if thumbnail.url %}<img src="{{thumbnail.url}}" alt="{{video.title}}" class="w-100 main___img">{% endif %}
-                                        {% endwith %}
-                                        {% if video.richThumbnail.url %}
-                                        <img src="{{video.richThumbnail.url}}" alt="{{video.title}}" class="w-100 overlay___gif">
-                                        {% endif %}
-                                    </a>
-                                    <div class="overlay___text"><span>{{video.duration}}</span></div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-lg-7 col-md-7">
-                                <h2 class="my-2">{{video.title}}</h2>
-                                <div class="d-flex video___channel mb-3">
-                                    <div class="me-2">{{video.channel.name}}</div>
-                                    <div class="me-2">•</div>
-                                    <div class="me-2">{{video.viewCount.short}}</div>
-                                    <div class="me-2">•</div>
-                                    <div>{{video.publishedTime}}</div>
-                                </div>
-                                <div class="video___published__time">{% for desc in video.descriptionSnippet %}{{desc.text}}{% endfor %}</div>
-                            </div>
-                        </div>
-                        <div class="hr___line" style="display: none;"></div>
-                    </div>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
+    <div class="search-panel">
+      <form method="get" class="search-form" role="search">
+        <div class="search-input-wrap">
+          <i class="bi bi-search"></i>
+          <input type="search" oninput="showSuggestions(this.value)" class="search-input" name="search_query" value="{{ search_query }}" placeholder="Search videos, creators, or topics" id="search-input" autocomplete="off" aria-label="Search videos, creators, or topics">
+          <div id="suggestions-container"></div>
         </div>
-        {% elif option_selected == 'playlist' %}
-        <div class="videos___content">
-            <div class="video__loading_time"><p>About {{playlist_length}} playlists found (in {{time_playlist}} seconds)</p></div>
-            <div class="videos___details">
-                <div class="row">
-                    {% for video in playlists %}
-                    {% if video %}
-                    <div class="col-12 col-md-6 col-lg-6 mb-4">
-                        <div class="row d-flex">
-                            <div class="col-12 col-lg-5 col-md-5">
-                                <div class="video___thumbnail">
-                                    <a href="{% url 'playlist' %}?list={{video.id|urlencode}}" rel="noopener noreferrer">
-                                        {% with thumbnail=video.thumbnails|last %}
-                                        {% if thumbnail.url %}<img src="{{thumbnail.url}}" alt="{{video.title}}" class="w-100 main___img">{% endif %}
-                                        {% endwith %}
-                                    </a>
-                                    <div class="overlay___text"><span>Total {{video.videoCount}} videos</span></div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-lg-7 col-md-7">
-                                <h2 class="my-2">{{video.title}}</h2>
-                                <div class="d-flex video___channel mb-3">
-                                    <div class="me-2">{{video.channel.name}}</div>
-                                    <div class="me-2">•</div>
-                                    <div class="me-2">{{video.type}}</div>
-                                </div>
-                                <div class="video___published__time"></div>
-                            </div>
-                        </div>
-                        <div class="hr___line" style="display: none;"></div>
-                    </div>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        {% endif %}
+        <select class="search-select" name="find" aria-label="Search type">
+          <option value="videos"{% if option_selected == 'videos' %} selected{% endif %}>Videos</option>
+          <option value="playlist"{% if option_selected == 'playlist' %} selected{% endif %}>Playlists</option>
+        </select>
+        <button type="submit" class="search-submit" aria-label="Search"><i class="bi bi-arrow-up-right"></i></button>
+      </form>
     </div>
+  </section>
+
+  {% include 'includes/alerts.html' %}
+
+  {% if option_selected %}
+  <section class="results-section" aria-labelledby="results-title">
+    <div class="results-header">
+      <div>
+        <span class="eyebrow">Your results</span>
+        <h2 id="results-title">{% if option_selected == 'playlist' %}Playlists for “{{ search_query }}”{% else %}Videos for “{{ search_query }}”{% endif %}</h2>
+        <p>Fresh picks, ready when you are.</p>
+      </div>
+      <div class="result-count"><strong>{% if option_selected == 'playlist' %}{{ playlist_length }}{% else %}{{ length }}{% endif %}</strong> matches</div>
+    </div>
+
+    {% if option_selected == 'playlist' %}
+      {% if playlists %}
+      <div class="result-grid">
+        {% for video in playlists %}{% if video %}{% include 'includes/playlist_card.html' with video=video %}{% endif %}{% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state__icon"><i class="bi bi-collection-play"></i></div>
+        <h3>No playlists found</h3>
+        <p>Try a broader search or explore a different topic.</p>
+      </div>
+      {% endif %}
+    {% else %}
+      {% if videos or next_videos %}
+      <div class="result-grid">
+        {% for video in videos %}{% if video %}{% include 'includes/video_card.html' with video=video %}{% endif %}{% endfor %}
+        {% for video in next_videos %}{% if video %}{% include 'includes/video_card.html' with video=video %}{% endif %}{% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state__icon"><i class="bi bi-stars"></i></div>
+        <h3>Nothing surfaced yet</h3>
+        <p>Try another phrase, creator, or a more specific topic.</p>
+      </div>
+      {% endif %}
+    {% endif %}
+  </section>
+  {% else %}
+  <section class="empty-state" aria-label="Get started">
+    <div class="empty-state__icon"><i class="bi bi-compass"></i></div>
+    <h3>What are you curious about?</h3>
+    <p>Start with a search above and let VUE bring the good stuff to the surface.</p>
+  </section>
+  {% endif %}
 </div>
 
-  {{ suggestions|json_script:"youtube-suggestions" }}
-  <script>
-    function showSuggestions(query) {
-      const suggestionsContainer = document.getElementById('suggestions-container');
-      suggestionsContainer.innerHTML = '';
-  
-      const suggestions = getSuggestionsFromAPI(query);
-  
-      if (suggestions.length > 0) {
-        suggestions.forEach(suggestion => {
-          const suggestionElement = document.createElement('div');
-          suggestionElement.classList.add('suggestion');
-          suggestionElement.textContent = suggestion;
-          suggestionElement.addEventListener('click', () => {
-            // Handle suggestion click (e.g., populate search input with suggestion)
-            document.getElementById('search-input').value = suggestion;
-            suggestionsContainer.style.display = 'none';
-          });
-          suggestionsContainer.appendChild(suggestionElement);
-        });
-  
-        suggestionsContainer.style.display = 'block';
-      } else {
-        suggestionsContainer.style.display = 'none';
-      }
-    }
-  
-    function getSuggestionsFromAPI(query) {
-      const staticSuggestions = JSON.parse(document.getElementById('youtube-suggestions').textContent);
-      return staticSuggestions.filter(suggestion => suggestion.toLowerCase().includes(query.toLowerCase()));
-    }
-  </script>
-
+{{ suggestions|json_script:"youtube-suggestions" }}
 {% endblock content %}
+
+{% block extra_scripts %}
+<script>
+  const suggestionData = document.getElementById('youtube-suggestions');
+  const suggestionValues = suggestionData ? JSON.parse(suggestionData.textContent) : [];
+  const suggestionsContainer = document.getElementById('suggestions-container');
+
+  function showSuggestions(query) {
+    if (!suggestionsContainer) return;
+    suggestionsContainer.innerHTML = '';
+    const normalized = query.trim().toLowerCase();
+    const suggestions = normalized
+      ? suggestionValues.filter((suggestion) => suggestion.toLowerCase().includes(normalized)).slice(0, 8)
+      : [];
+    suggestions.forEach((suggestion) => {
+      const element = document.createElement('div');
+      element.className = 'suggestion';
+      element.textContent = suggestion;
+      element.addEventListener('click', () => {
+        document.getElementById('search-input').value = suggestion;
+        suggestionsContainer.style.display = 'none';
+      });
+      suggestionsContainer.appendChild(element);
+    });
+    suggestionsContainer.style.display = suggestions.length ? 'block' : 'none';
+  }
+
+  document.addEventListener('click', (event) => {
+    if (suggestionsContainer && !suggestionsContainer.contains(event.target) && event.target.id !== 'search-input') {
+      suggestionsContainer.style.display = 'none';
+    }
+  });
+</script>
+{% endblock extra_scripts %}

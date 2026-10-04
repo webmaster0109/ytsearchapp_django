@@ -131,6 +131,16 @@ if (site.scheme not in {'http', 'https'} or not site.netloc or site.path
 if not DEBUG and site.scheme != 'https':
     raise ImproperlyConfigured('Use an HTTPS SITE_URL in production.')
 
+_default_csrf_origins = [f'{site.scheme}://{site.netloc}']
+if DEBUG:
+    _default_csrf_origins.extend([
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+    ])
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(
+    _env_list('CSRF_TRUSTED_ORIGINS', _default_csrf_origins)
+))
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -193,7 +203,7 @@ EMAIL_PORT = _env_int('EMAIL_PORT', default=587)
 EMAIL_USE_TLS = _env_bool('EMAIL_USE_TLS', default=True)
 EMAIL_HOST_USER = _env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = _env('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = _env('DEFAULT_FROM_EMAIL', default='noreply@localhost')
+DEFAULT_FROM_EMAIL = _env('DEFAULT_FROM_EMAIL', default='')
 EMAIL_TIMEOUT = 5
 if not DEBUG and EMAIL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend':
     if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD or DEFAULT_FROM_EMAIL.endswith('@localhost'):
@@ -207,7 +217,8 @@ CSRF_COOKIE_SECURE = not DEBUG
 SECURE_HSTS_SECONDS = _env_int('SECURE_HSTS_SECONDS', default=0 if DEBUG else 31536000)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=not DEBUG)
 SECURE_HSTS_PRELOAD = _env_bool('SECURE_HSTS_PRELOAD', default=not DEBUG)
-SECURE_REFERRER_POLICY = 'no-referrer'
+# Preserve the origin on form POSTs for CSRF checks and on YouTube embeds.
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 if _env_bool('TRUST_PROXY_HTTPS', default=False):
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
