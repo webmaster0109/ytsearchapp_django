@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
@@ -7,7 +7,12 @@ from django.urls import reverse
 
 from .models import Profile
 from .views import home
-from .youtube import PlaylistVideos, SafePlaylistsSearch, SafeVideosSearch
+from .youtube import (
+    PlaylistVideos,
+    SafePlaylistsSearch,
+    SafeVideosSearch,
+    get_video_detail,
+)
 
 
 class SafeYouTubeComponentTests(SimpleTestCase):
@@ -27,6 +32,26 @@ class SafeYouTubeComponentTests(SimpleTestCase):
         self.assertEqual(result['channel']['name'], 'Example channel')
         self.assertIsNone(result['channel']['id'])
         self.assertIsNone(result['channel']['link'])
+
+    @patch('ytsearchapp.youtube.VideoCore')
+    def test_video_detail_uses_requested_id_when_response_omits_it(self, video_core_class):
+        video_core = Mock()
+        video_core.HTMLresponseSource = {
+            'videoDetails': {
+                'title': 'Example video',
+                'channelId': None,
+                'author': 'Example channel',
+            },
+            'microformat': {'playerMicroformatRenderer': {}},
+        }
+        video_core_class.return_value = video_core
+
+        result = get_video_detail('video-id', timeout=3)
+
+        self.assertEqual(result['id'], 'video-id')
+        self.assertEqual(result['link'], 'https://www.youtube.com/watch?v=video-id')
+        self.assertIsNone(result['channel']['link'])
+        video_core.sync_html_create.assert_called_once_with()
 
     def test_video_with_channel_id_keeps_channel_link(self):
         search = object.__new__(SafeVideosSearch)

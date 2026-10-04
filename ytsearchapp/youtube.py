@@ -4,11 +4,12 @@ from youtubesearchpython import (
     Playlist,
     PlaylistsSearch,
     Suggestions,
-    Video,
     VideoSortOrder,
     VideosSearch,
 )
-from youtubesearchpython.core.constants import playlistElementKey, videoElementKey
+from youtubesearchpython.core.componenthandler import getVideoId
+from youtubesearchpython.core.constants import ResultMode, playlistElementKey, videoElementKey
+from youtubesearchpython.core.video import VideoCore
 
 
 def _youtube_url(base_url, identifier):
@@ -184,8 +185,64 @@ class PlaylistVideos:
         return self.get_playlist_videos()
 
 
+def _get_video_detail_component(source, requested_id):
+    """Build video details without assuming YouTube returned every field."""
+    source = source or {}
+    details = source.get('videoDetails') or {}
+    microformat = (source.get('microformat') or {}).get('playerMicroformatRenderer') or {}
+    video_id = details.get('videoId') or requested_id
+    if not video_id:
+        return None
+
+    channel_id = details.get('channelId')
+    duration_seconds = details.get('lengthSeconds')
+    component = {
+        'id': video_id,
+        'title': details.get('title'),
+        'duration': {'secondsText': duration_seconds},
+        'viewCount': {'text': details.get('viewCount')},
+        'thumbnails': (details.get('thumbnail') or {}).get('thumbnails'),
+        'description': details.get('shortDescription'),
+        'channel': {
+            'name': details.get('author'),
+            'id': channel_id,
+            'link': _youtube_url('https://www.youtube.com/channel/', channel_id),
+        },
+        'allowRatings': details.get('allowRatings'),
+        'averageRating': details.get('averageRating'),
+        'keywords': details.get('keywords'),
+        'isLiveContent': details.get('isLiveContent'),
+        'publishDate': microformat.get('publishDate'),
+        'uploadDate': microformat.get('uploadDate'),
+        'isFamilySafe': microformat.get('isFamilySafe'),
+        'category': microformat.get('category'),
+    }
+    component['isLiveNow'] = bool(
+        component['isLiveContent'] and duration_seconds == '0'
+    )
+    component['link'] = _youtube_url('https://www.youtube.com/watch?v=', video_id)
+    return component
+
+
 def get_video_detail(query, timeout=3):
-    return Video.getInfo(query, timeout=timeout)
+    """Fetch video details while tolerating incomplete YouTube responses.
+
+    ``youtube-search-python`` calls ``Video.getInfo`` and unconditionally
+    concatenates ``videoDetails.videoId`` into a URL. YouTube sometimes omits
+    that field (for example for restricted or changed player responses), so
+    use the package's request layer and parse the response defensively here.
+    """
+    requested_id = getVideoId(query)
+    if not requested_id:
+        return None
+
+    video_core = VideoCore(query, 'getInfo', ResultMode.dict, timeout, True)
+    video_core.sync_html_create()
+    source = getattr(video_core, 'HTMLresponseSource', {}) or {}
+    playability_status = (source.get('playabilityStatus') or {}).get('status')
+    if playability_status and playability_status != 'OK' and not source.get('videoDetails'):
+        return None
+    return _get_video_detail_component(source, requested_id)
 
 def get_video_comments(video_id, limit=50):
     return Comments.get(video_id).get('result', [])[:min(max(1, limit), 100)]
