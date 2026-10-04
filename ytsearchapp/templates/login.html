@@ -24,8 +24,9 @@
                             </div>
                           </div>
                           {% include 'includes/alerts.html' %}
-                          <form action="" method="post">
+                          <form action="{% url 'login' %}" method="post">
                             {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ next }}">
                             <div class="row gy-3 overflow-hidden">
                               <div class="col-12">
                                 <div class="form-floating mb-3">
@@ -52,6 +53,7 @@
                               <div class="d-flex gap-2 gap-md-4 flex-column flex-md-row justify-content-md-end">
                                 <a href="{% url 'register' %}" class="link-secondary text-decoration-none">Create new account</a>
                                 <a href="{% url 'forgot_password' %}" class="link-secondary text-decoration-none">Forgot password</a>
+                                <a href="{% url 'login' %}#resend-verification" class="link-secondary text-decoration-none">Resend verification</a>
                               </div>
                             </div>
                           </div>
@@ -61,5 +63,19 @@
         </div>
         <div class="col-12 col-lg-3 col-md-3"></div>
     </div>
+</div>
+<div id="resend-verification" class="container mb-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-6">
+      <form action="{% url 'resend_verification' %}" method="post" class="card card-body">
+        {% csrf_token %}
+        <label for="verification-identifier" class="form-label text-dark">Username or email for a new verification link</label>
+        <div class="input-group">
+          <input id="verification-identifier" name="identifier" type="text" class="form-control" required>
+          <button class="btn btn-secondary" type="submit">Resend</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock content %}

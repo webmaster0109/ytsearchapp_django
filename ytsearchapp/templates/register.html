@@ -24,36 +24,36 @@
                             </div>
                         </div>
                         {% include 'includes/alerts.html' %}
-                        <form action="" method="post">
+                        <form action="{% url 'register' %}" method="post">
                             {% csrf_token %}
                             <div class="row gy-3 overflow-hidden">
                                 <div class="col-12">
                                     <div class="form-floating mb-3">
-                                      <input type="text" class="form-control" name="first_name" id="first_name" placeholder="First name" required>
+                                      <input type="text" class="form-control" name="first_name" id="first-name" autocomplete="given-name" placeholder="First name" required>
                                       <label for="first_name" class="form-label">First Name</label>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-floating mb-3">
-                                      <input type="text" class="form-control" name="last_name" id="last_name" placeholder="Last name" required>
+                                      <input type="text" class="form-control" name="last_name" id="last-name" autocomplete="family-name" placeholder="Last name" required>
                                       <label for="last_name" class="form-label">Last Name</label>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-floating mb-3">
-                                    <input type="email" class="form-control" name="email" id="email" placeholder="name@example.com" required>
+                                    <input type="email" class="form-control" name="email" id="email" autocomplete="email" placeholder="name@example.com" required>
                                     <label for="email" class="form-label">Email</label>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-floating mb-3">
-                                    <input type="password" class="form-control" name="password" id="password" value="" placeholder="Password" required>
+                                    <input type="password" class="form-control" name="password" id="password" autocomplete="new-password" placeholder="Password" required>
                                     <label for="password" class="form-label">Password</label>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-floating mb-3">
-                                    <input type="password" class="form-control" name="confirm_password" id="password" value="" placeholder="Confirm Password" required>
+                                    <input type="password" class="form-control" name="confirm_password" id="confirm-password" autocomplete="new-password" placeholder="Confirm Password" required>
                                     <label for="confirm_password" class="form-label">Confirm Password</label>
                                     </div>
                                 </div>

@@ -10,13 +10,13 @@
                 <form method="get">
                     <div class="d-flex justify-content-center">
                         <div class="flex-grow-1 search___container">
-                            <input type="text" oninput="showSuggestions(this.value)" class="form-control" name="search_query" placeholder="Type to search" id="search-input">
+                    <input type="search" oninput="showSuggestions(this.value)" class="form-control" name="search_query" value="{{ search_query }}" placeholder="Type to search" id="search-input" autocomplete="off">
                             <div id="suggestions-container" class="mt-3"></div>
                         </div>
                         <div>
                             <select class="form-select" name="find">
-                                <option value="videos">Video</option>
-                                <option value="playlist">Playlist</option>
+                                <option value="videos"{% if option_selected == 'videos' %} selected{% endif %}>Video</option>
+                                <option value="playlist"{% if option_selected == 'playlist' %} selected{% endif %}>Playlist</option>
                             </select>
                         </div>
                         <div><button type="submit" class="btn btn-danger"><i class="bi bi-search"></i></button></div>
@@ -28,7 +28,17 @@
             </div>
         </div>
         <div class="col-12 col-md-3 col-lg-3">
-            <div class="user___details col-lg-6 offset-lg-5" style="margin-top: 30px;"><a href="{% url 'logout' %}" class="btn btn-danger">Logout</a></div>
+            <div class="user___details col-lg-6 offset-lg-5" style="margin-top: 30px;">
+                {% if user.is_authenticated %}
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+                <a href="{% url 'saved_videos' %}" class="btn btn-secondary mt-2">Saved videos</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-secondary">Log in</a>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
@@ -45,12 +55,10 @@
                         <div class="row d-flex">
                             <div class="col-12 col-lg-5 col-md-5">
                                 <div class="video___thumbnail">
-                                    <a href="watch?video_id={{video.id}}" rel="noopener noreferrer">
-                                        {% if video.thumbnails.1.url %}
-                                        <img src="{{video.thumbnails.1.url}}" alt="{{video.title}}" class="w-100 main___img">
-                                        {% else %}
-                                        <img src="{{video.thumbnails.0.url}}" alt="{{video.title}}" class="w-100 main___img">
-                                        {% endif %}
+                                    <a href="{% url 'watch_video' %}?video_id={{video.id|urlencode}}" rel="noopener noreferrer">
+                                        {% with thumbnail=video.thumbnails|last %}
+                                        {% if thumbnail.url %}<img src="{{thumbnail.url}}" alt="{{video.title}}" class="w-100 main___img">{% endif %}
+                                        {% endwith %}
                                         {% if video.richThumbnail.url %}
                                         <img src="{{video.richThumbnail.url}}" alt="{{video.title}}" class="w-100 overlay___gif">
                                         {% endif %}
@@ -81,12 +89,10 @@
                         <div class="row d-flex">
                             <div class="col-12 col-lg-5 col-md-5">
                                 <div class="video___thumbnail">
-                                    <a href="watch?video_id={{video.id}}" rel="noopener noreferrer">
-                                        {% if video.thumbnails.1.url %}
-                                        <img src="{{video.thumbnails.1.url}}" alt="{{video.title}}" class="w-100 main___img">
-                                        {% else %}
-                                        <img src="{{video.thumbnails.0.url}}" alt="{{video.title}}" class="w-100 main___img">
-                                        {% endif %}
+                                    <a href="{% url 'watch_video' %}?video_id={{video.id|urlencode}}" rel="noopener noreferrer">
+                                        {% with thumbnail=video.thumbnails|last %}
+                                        {% if thumbnail.url %}<img src="{{thumbnail.url}}" alt="{{video.title}}" class="w-100 main___img">{% endif %}
+                                        {% endwith %}
                                         {% if video.richThumbnail.url %}
                                         <img src="{{video.richThumbnail.url}}" alt="{{video.title}}" class="w-100 overlay___gif">
                                         {% endif %}
@@ -124,12 +130,10 @@
                         <div class="row d-flex">
                             <div class="col-12 col-lg-5 col-md-5">
                                 <div class="video___thumbnail">
-                                    <a href="playlist?list={{video.id}}" rel="noopener noreferrer">
-                                        {% if video.thumbnails.1.url %}
-                                        <img src="{{video.thumbnails.3.url}}" alt="{{video.title}}" class="w-100 main___img">
-                                        {% else %}
-                                        <img src="{{video.thumbnails.0.url}}" alt="{{video.title}}" class="w-100 main___img">
-                                        {% endif %}
+                                    <a href="{% url 'playlist' %}?list={{video.id|urlencode}}" rel="noopener noreferrer">
+                                        {% with thumbnail=video.thumbnails|last %}
+                                        {% if thumbnail.url %}<img src="{{thumbnail.url}}" alt="{{video.title}}" class="w-100 main___img">{% endif %}
+                                        {% endwith %}
                                     </a>
                                     <div class="overlay___text"><span>Total {{video.videoCount}} videos</span></div>
                                 </div>
@@ -155,12 +159,12 @@
     </div>
 </div>
 
-<script>
+  {{ suggestions|json_script:"youtube-suggestions" }}
+  <script>
     function showSuggestions(query) {
       const suggestionsContainer = document.getElementById('suggestions-container');
       suggestionsContainer.innerHTML = '';
   
-      // Replace this with your actual data fetching logic or static data
       const suggestions = getSuggestionsFromAPI(query);
   
       if (suggestions.length > 0) {
@@ -182,15 +186,8 @@
       }
     }
   
-    // Replace this function with actual API call or data source
     function getSuggestionsFromAPI(query) {
-      // For demonstration, using static suggestions
-      const staticSuggestions = [
-            {% for suggestion in suggestions %}
-                "{{suggestion}}" {% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ];
-        console.log(staticSuggestions);
+      const staticSuggestions = JSON.parse(document.getElementById('youtube-suggestions').textContent);
       return staticSuggestions.filter(suggestion => suggestion.toLowerCase().includes(query.toLowerCase()));
     }
   </script>

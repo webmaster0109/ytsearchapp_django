@@ -23,12 +23,10 @@
                         <div class="row d-flex">
                             <div class="col-12 col-lg-5 col-md-5">
                                 <div class="video___thumbnail">
-                                    <a href="watch?video_id={{video.id}}" rel="noopener noreferrer">
-                                        {% if video.thumbnails.1.url %}
-                                        <img src="{{video.thumbnails.3.url}}" alt="{{video.title}}" class="w-100 main___img">
-                                        {% else %}
-                                        <img src="{{video.thumbnails.0.url}}" alt="{{video.title}}" class="w-100 main___img">
-                                        {% endif %}
+                                    <a href="{% url 'watch_video' %}?video_id={{video.id|urlencode}}" rel="noopener noreferrer">
+                                        {% with thumbnail=video.thumbnails|last %}
+                                        {% if thumbnail.url %}<img src="{{thumbnail.url}}" alt="{{video.title}}" class="w-100 main___img">{% endif %}
+                                        {% endwith %}
                                         {% if video.richThumbnail.url %}
                                         <img src="{{video.richThumbnail.url}}" alt="{{video.title}}" class="w-100 overlay___gif">
                                         {% endif %}

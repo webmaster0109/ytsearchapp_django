@@ -13,12 +13,17 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: ['3.12', '3.13', '3.14']
+
+    env:
+      DJANGO_DEBUG: 'True'
+      DJANGO_SECRET_KEY: 'ci-only-random-looking-key-which-is-not-used-in-production-123456789'
+      SITE_URL: 'http://localhost:8000'
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install Dependencies
@@ -27,4 +32,16 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       run: |
+        python manage.py check
+        python manage.py makemigrations --check --dry-run
         python manage.py test
+    - name: Check production settings
+      env:
+        DJANGO_DEBUG: 'False'
+        SITE_URL: 'https://example.com'
+        DJANGO_ALLOWED_HOSTS: 'example.com'
+        CACHE_URL: 'redis://127.0.0.1:6379/1'
+        EMAIL_HOST_USER: 'ci@example.com'
+        EMAIL_HOST_PASSWORD: 'ci-password'
+        DEFAULT_FROM_EMAIL: 'ci@example.com'
+      run: python manage.py check --deploy --fail-level WARNING

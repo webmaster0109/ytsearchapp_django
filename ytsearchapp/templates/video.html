@@ -15,7 +15,7 @@
     <div class="row single___video__detail">
         <div class="col-12 col-md-8 col-lg-8">
             <div id="player">
-                <iframe src="https://www.youtube.com/embed/{{video.id}}?autoplay=1&mute=1" frameborder="0" allowfullscreen=""></iframe>
+                <iframe src="https://www.youtube.com/embed/{{video.id}}?autoplay=1&mute=1" title="{{ video.title }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
             </div>
             <div class="d-flex mt-2">
                 <div class="flex-grow-1">
@@ -23,7 +23,17 @@
                     <p class="video___channel__title">{{video.channel.name}}</p>
                 </div>
                 <div>
-                    <a href="#" class="btn btn-danger col-12">Channel</a>
+                    {% if video.channel.link %}<a href="{{ video.channel.link }}" target="_blank" rel="noopener noreferrer" class="btn btn-danger col-12">Channel</a>{% endif %}
+                    {% if user.is_authenticated %}
+                    <form action="{% url 'save_video' %}" method="post" class="mt-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="video_id" value="{{ video.id }}">
+                        <input type="hidden" name="next" value="{{ next_url }}">
+                        <button type="submit" class="btn btn-secondary col-12"{% if is_saved %} disabled{% endif %}>
+                            {% if is_saved %}Saved{% else %}Save video{% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
                 </div>
             </div>
 
@@ -41,7 +51,11 @@
                     {% for comment in comments %}
                     <div class="col-12 col-md-12 col-lg-12 mb-3">
                         <div class="d-flex">
-                            <div class="me-3"><img src="{{comment.author.thumbnails.2.url}}" class="" alt="{{comment.id}}" /></div>
+                            <div class="me-3">
+                                {% with author_thumbnail=comment.author.thumbnails|last %}
+                                {% if author_thumbnail.url %}<img src="{{author_thumbnail.url}}" alt="{{comment.author.name}}" />{% endif %}
+                                {% endwith %}
+                            </div>
                             <div>
                                 <span style="color: lightgray;">{{comment.author.name}} <span class="" style="color: #fff;">{{comment.published}}</span></span><br />
                                 <span>{{comment.content}}</span><br />

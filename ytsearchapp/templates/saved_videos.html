@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+  {% include 'logo.html' %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Saved videos</h2>
+    <a href="{% url 'home' %}" class="btn btn-secondary">Search more</a>
+  </div>
+  {% include 'includes/alerts.html' %}
+  <div class="row">
+    {% for video in saved_videos %}
+    <div class="col-12 col-md-6 mb-4">
+      <div class="card h-100">
+        {% if video.video_image %}<img src="{{ video.video_image }}" class="card-img-top" alt="{{ video.video_title }}">{% endif %}
+        <div class="card-body text-dark">
+          <h3 class="h5">{{ video.video_title }}</h3>
+          <p>{{ video.video_channel_name }}</p>
+          <a href="{% url 'watch_video' %}?video_id={{ video.video_id|urlencode }}" class="btn btn-primary">Watch</a>
+          <form action="{% url 'remove_saved_video' video.pk %}" method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger">Remove</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12"><p>No saved videos yet.</p></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock content %}
